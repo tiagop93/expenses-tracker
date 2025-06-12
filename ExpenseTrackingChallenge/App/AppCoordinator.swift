@@ -20,7 +20,11 @@ final class AppCoordinator: ObservableObject {
     func view(for screen: Screen) -> some View {
         switch screen {
         case .receiptHistory:
-            ReceiptHistoryView()
+            ReceiptHistoryView(
+                viewModel: ReceiptHistoryViewModel(
+                    dependencies: .defaultOption
+                )
+            )
         case .captureReceipt:
             CaptureReceiptView()
         }
@@ -44,12 +48,3 @@ extension AppCoordinator: ReceiptHistoryCoordinatorProtocol, CaptureReceiptCoord
         pop()
     }
 }
-
-protocol ReceiptHistoryCoordinatorProtocol {
-    func goToCaptureReceipt()
-}
-
-protocol CaptureReceiptCoordinatorProtocol {
-    func goBackToHistory()
-}
-
