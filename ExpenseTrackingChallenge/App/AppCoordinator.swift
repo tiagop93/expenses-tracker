@@ -8,11 +8,11 @@
 import SwiftUI
 
 final class AppCoordinator: ObservableObject {
-    
     @Published var path: [Screen] = []
     
     enum Screen: Hashable {
         case receiptHistory
+        case receiptDetauls(id: UUID)
         case captureReceipt
     }
     
@@ -22,9 +22,12 @@ final class AppCoordinator: ObservableObject {
         case .receiptHistory:
             ReceiptHistoryView(
                 viewModel: ReceiptHistoryViewModel(
-                    dependencies: .defaultOption
+                    dependencies: .defaultOption,
+                    coordinator: self
                 )
             )
+        case .receiptDetauls(let id):
+            ReceiptDetailsView()
         case .captureReceipt:
             CaptureReceiptView()
         }
@@ -39,11 +42,17 @@ final class AppCoordinator: ObservableObject {
     }
 }
 
-extension AppCoordinator: ReceiptHistoryCoordinatorProtocol, CaptureReceiptCoordinatorProtocol {
+extension AppCoordinator: ReceiptHistoryCoordinatorProtocol {
     func goToCaptureReceipt() {
         push(.captureReceipt)
     }
+    
+    func goToReceiptDetails(id: UUID) {
+        push(.receiptDetauls(id: id))
+    }
+}
 
+extension AppCoordinator: CaptureReceiptCoordinatorProtocol {
     func goBackToHistory() {
         pop()
     }
