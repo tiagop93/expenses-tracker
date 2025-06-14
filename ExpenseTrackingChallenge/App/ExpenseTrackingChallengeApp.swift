@@ -9,12 +9,11 @@ import SwiftUI
 
 @main
 struct ExpenseTrackingChallengeApp: App {
-    @StateObject private var coordinator = AppCoordinator()
+    private var coordinator = AppCoordinator()
     
     var body: some Scene {
         WindowGroup {
-            AppRootView()
-                .environmentObject(coordinator)
+            AppRootView(coordinator: coordinator)
         }
     }
 }
