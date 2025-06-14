@@ -11,8 +11,8 @@ protocol ReceiptHistoryViewModelProtocol: ObservableObject {
     var state: ReceiptHistoryViewModel.State { get }
     
     func loadReceipts()
-    func didPressCaptureReceipt()
-    func didPressReceiptDetails(id: UUID)
+    func didPressCreateReceipt()
+    func didPressReceipt(receipt: Receipt)
 }
 
 final class ReceiptHistoryViewModel: ReceiptHistoryViewModelProtocol {
@@ -48,12 +48,12 @@ final class ReceiptHistoryViewModel: ReceiptHistoryViewModelProtocol {
         }
     }
     
-    func didPressCaptureReceipt() {
-        coordinator.goToCaptureReceipt()
+    func didPressCreateReceipt() {
+        coordinator.goToCreateReceipt()
     }
     
-    func didPressReceiptDetails(id: UUID) {
-        coordinator.goToReceiptDetails(id: id)
+    func didPressReceipt(receipt: Receipt) {
+        coordinator.goToEditReceipt(receipt)
     }
     
     enum State {
@@ -67,15 +67,15 @@ final class ReceiptHistoryViewModel: ReceiptHistoryViewModelProtocol {
 
 extension ReceiptHistoryViewModel {
     struct Dependencies {
-        let receiptHistoryRepository: ReceiptHistoryRepositoryProtocol
+        let receiptHistoryRepository: ReceiptRepositoryProtocol
         
         static var defaultOption: Dependencies {
-            .init(receiptHistoryRepository: ReceiptHistoryRepository())
+            .init(receiptHistoryRepository: ReceiptRepository())
         }
         
         static var mock: Dependencies {
             let mockPersistence = MockCoreDataController()
-              let repository = ReceiptHistoryRepository(persistence: mockPersistence)
+              let repository = ReceiptRepository(persistence: mockPersistence)
 
               let context = mockPersistence.viewContext
               let factory = ReceiptModelFactory()

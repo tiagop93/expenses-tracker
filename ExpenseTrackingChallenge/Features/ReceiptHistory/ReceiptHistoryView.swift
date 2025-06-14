@@ -34,7 +34,7 @@ struct ReceiptHistoryView<ViewModel: ReceiptHistoryViewModelProtocol>: View {
                         .font(.subheadline)
                         .foregroundColor(.gray)
                     Button("Add Receipt") {
-                        viewModel.didPressCaptureReceipt()
+                        viewModel.didPressCreateReceipt()
                     }
                 }
             case .failed(let message):
@@ -54,7 +54,7 @@ struct ReceiptHistoryView<ViewModel: ReceiptHistoryViewModelProtocol>: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    viewModel.didPressCaptureReceipt()
+                    viewModel.didPressCreateReceipt()
                 } label: {
                     Image(systemName: "plus")
                 }

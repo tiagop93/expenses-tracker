@@ -8,16 +8,6 @@
 import Foundation
 
 protocol ReceiptHistoryCoordinatorProtocol {
-    func goToCaptureReceipt()
-    func goToReceiptDetails(id: UUID)
-}
-
-final class MockReceiptHistoryCoordinator: ReceiptHistoryCoordinatorProtocol {
-    func goToCaptureReceipt() {
-        // No action for preview
-    }
-    
-    func goToReceiptDetails(id: UUID) {
-        // No action for preview
-    }
+    func goToCreateReceipt()
+    func goToEditReceipt(_ receipt: Receipt)
 }
