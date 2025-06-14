@@ -17,15 +17,17 @@ final class AppCoordinator: CoordinatorProtocol {
     typealias Route = Routes.Push
     typealias Sheet = Routes.Sheet
     typealias FullScreenCover = Routes.FullScreenCover
-
+    
     // MARK: — Protocol Properties
     @Published var path = NavigationPath()
-    @Published var sheet: Sheet? = nil
-    @Published var fullScreenCover: FullScreenCover? = nil
+    @Published var sheet: Sheet?
+    @Published var fullScreenCover: FullScreenCover?
     
     var mainView: some View {
         build(page: .receiptHistory)
-     }
+    }
+    
+    private var imagePickerCompletion: ((Data) -> Void)?
     
     // MARK: — Build Methods
     @ViewBuilder
@@ -51,12 +53,12 @@ final class AppCoordinator: CoordinatorProtocol {
     
     @ViewBuilder
     func build(sheet: Sheet) -> some View {
-      EmptyView()
+        EmptyView()
     }
-
+    
     @ViewBuilder
     func build(fullScreenCover: FullScreenCover) -> some View {
-      EmptyView()
+        EmptyView()
     }
 }
 
@@ -74,7 +76,7 @@ extension AppCoordinator: ReceiptHistoryCoordinatorProtocol {
     func goToCreateReceipt() {
         push(.receiptForm(mode: .create))
     }
-
+    
     func goToEditReceipt(_ receipt: Receipt) {
         push(.receiptForm(mode: .edit(existing: receipt)))
     }
@@ -83,6 +85,14 @@ extension AppCoordinator: ReceiptHistoryCoordinatorProtocol {
 // MARK: - ReceiptFormCoordinatorProtocol
 
 extension AppCoordinator: ReceiptFormCoordinatorProtocol {
+    func presentImagePicker(
+        source: ImageSource,
+        onImagePicked: @escaping (Data) -> Void
+    ) {
+        imagePickerCompletion = onImagePicked
+        sheet = .imagePicker(source: source.uiImagePickerSourceType)
+    }
+    
     func didSaveNewReceipt(_: Receipt) {
         pop()
     }

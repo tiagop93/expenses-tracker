@@ -10,10 +10,14 @@ import SwiftUI
 struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
     @ObservedObject private var viewModel: ViewModel
     
+    @State private var showingImageSourceChooser = false
+    @State private var showingImagePicker = false
+    @State private var imageSource: ImageSource = .photoLibrary
+    
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
     }
-
+    
     private var title: String {
         switch viewModel.mode {
         case .create:
@@ -22,11 +26,13 @@ struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
             return "Edit Receipt"
         }
     }
-
+    
     var body: some View {
         Form {
             Section(header: Text("Details")) {
                 TextField("Name", text: $viewModel.name)
+                    .autocorrectionDisabled(true)
+                    .textInputAutocapitalization(.words)
                 DatePicker("Date", selection: $viewModel.date, displayedComponents: .date)
                 HStack {
                     TextField(
@@ -39,7 +45,7 @@ struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
                     Text(viewModel.currency)
                 }
             }
-
+            
             Section(header: Text("Image")) {
                 if let data = viewModel.image,
                    let uiImage = UIImage(data: data) {
@@ -48,18 +54,20 @@ struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
                         .scaledToFit()
                         .frame(maxHeight: 200)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .onTapGesture {
+                            Task { @MainActor in
+                                showingImageSourceChooser = true
+                            }
+                        }
                 } else {
-                    Button(action: {
-                        // TODO: Present image picker
-                    }) {
-                        HStack {
-                            Image(systemName: "photo")
-                            Text("Add Photo")
+                    Button("Add Photo") {
+                        Task { @MainActor in
+                            showingImageSourceChooser = true
                         }
                     }
                 }
             }
-
+            
             if let error = viewModel.errorMessage {
                 Section {
                     Text(error)
@@ -68,12 +76,12 @@ struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
             }
             
             if case .edit = viewModel.mode {
-                           Section {
-                               Button("Delete Receipt", role: .destructive) {
-                                   Task { await viewModel.delete() }
-                               }
-                           }
-                       }
+                Section {
+                    Button("Delete Receipt", role: .destructive) {
+                        Task { await viewModel.delete() }
+                    }
+                }
+            }
         }
         .navigationBarTitle(title, displayMode: .inline)
         .toolbar {
@@ -87,6 +95,33 @@ struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
                         Image(systemName: "checkmark")
                     }
                     .disabled(viewModel.name.isEmpty)
+                }
+            }
+        }
+        .confirmationDialog(
+            "Add Receipt Photo",
+            isPresented: $showingImageSourceChooser,
+            titleVisibility: .visible
+        ) {
+            Button("Take Photo") {
+                Task { @MainActor in
+                    imageSource = .camera
+                    showingImagePicker = true
+                }
+            }
+            Button("Choose from Library") {
+                Task { @MainActor in
+                    imageSource = .photoLibrary
+                    showingImagePicker = true
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        .sheet(isPresented: $showingImagePicker) {
+            ImagePicker(sourceType: imageSource.uiImagePickerSourceType) { data in
+                Task { @MainActor in
+                    viewModel.image = data
+                    showingImagePicker = false
                 }
             }
         }

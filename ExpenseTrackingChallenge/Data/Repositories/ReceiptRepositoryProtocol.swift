@@ -32,9 +32,29 @@ final class ReceiptRepository: ReceiptRepositoryProtocol {
 
     func save(receipt: Receipt) throws {
         let context = persistence.viewContext
-        _ = factory.toEntity(receipt, in: context)
+
+        let request: NSFetchRequest<ReceiptEntity> = ReceiptEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", receipt.id as CVarArg)
+        let matches = try context.fetch(request)
+
+        let entity: ReceiptEntity
+        if let existing = matches.first {
+            entity = existing
+        } else {
+            entity = ReceiptEntity(context: context)
+            entity.id = receipt.id
+        }
+
+        entity.name       = receipt.name
+        entity.date       = receipt.date
+        entity.amount     = receipt.amount as NSDecimalNumber
+        entity.currency   = receipt.currency
+        entity.imageData  = receipt.image
+        entity.createdAt  = entity.createdAt ?? Date()
+
         try context.save()
     }
+
     
     func delete(receipt: Receipt) throws {
         let context = persistence.viewContext

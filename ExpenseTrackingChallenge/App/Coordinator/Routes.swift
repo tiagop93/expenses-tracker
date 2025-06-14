@@ -5,6 +5,8 @@
 //  Created by Tiago Pereira on 14/06/2025.
 //
 
+import UIKit
+
 enum Routes {
     enum Push: Hashable {
         case receiptHistory
@@ -12,13 +14,13 @@ enum Routes {
     }
 
     enum Sheet: Hashable, Identifiable {
-        case sheet
+        case imagePicker(source: UIImagePickerController.SourceType)
         
         var id: Self { self }
     }
 
     enum FullScreenCover: Hashable, Identifiable {
-        case fullScreen
+        case fullScreenCover
         
         var id: Self { self }
     }

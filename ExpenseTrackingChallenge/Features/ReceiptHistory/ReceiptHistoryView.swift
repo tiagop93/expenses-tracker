@@ -25,7 +25,7 @@ struct ReceiptHistoryView<ViewModel: ReceiptHistoryViewModelProtocol>: View {
                 List(receipts, id: \.id) { receipt in
                     ReceiptRowView(receipt: receipt)
                         .onTapGesture {
-                            
+                            viewModel.didPressReceipt(receipt: receipt)
                         }
                 }
             case .empty:

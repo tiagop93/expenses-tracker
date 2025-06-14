@@ -8,6 +8,10 @@
 import Foundation
 
 final class MockReceiptFormCoordinator: ReceiptFormCoordinatorProtocol {
+    func presentImagePicker(source: ImageSource, onImagePicked: @escaping (Data) -> Void) {
+        // No action for preview
+    }
+    
     func didSaveNewReceipt(_: Receipt) {
         // No action for preview
     }

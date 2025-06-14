@@ -36,9 +36,11 @@ extension CoordinatorProtocol {
     func push(_ page: Route) {
         path.append(page)
     }
+    
     func pop() {
         path.removeLast()
     }
+    
     func popToRoot() {
         path = NavigationPath()
     }
@@ -46,6 +48,7 @@ extension CoordinatorProtocol {
     func present(sheet: Sheet) {
         self.sheet = sheet
     }
+    
     func dismissSheet() {
         sheet = nil
     }
@@ -53,6 +56,7 @@ extension CoordinatorProtocol {
     func present(fullScreenCover: FullScreenCover) {
         self.fullScreenCover = fullScreenCover
     }
+    
     func dismissFullScreenCover() {
         fullScreenCover = nil
     }

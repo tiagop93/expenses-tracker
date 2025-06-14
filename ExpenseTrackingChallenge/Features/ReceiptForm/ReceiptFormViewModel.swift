@@ -22,6 +22,8 @@ protocol ReceiptFormViewModelProtocol: ObservableObject {
     func save() async
     func delete() async
     func cancel()
+    
+    func presentImagePicker(source: ImageSource)
 }
 
 final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
@@ -30,19 +32,18 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
       case edit(existing: Receipt)
     }
     
-    // MARK: - Form Fields
+    // MARK: Form Fields
     @Published var name: String
     @Published var date: Date
     @Published var amount: Decimal
     @Published var currency: String
     @Published var image: Data?
 
-    // MARK: - UI State
+    // MARK: UI State
     @Published private(set) var isSaving: Bool = false
     @Published private(set) var errorMessage: String?
     
-    
-    // MARK: - Dependencies
+    // MARK: Dependencies
     let mode: Mode
     private let dependencies: Dependencies
     private let coordinator: ReceiptFormCoordinatorProtocol
@@ -72,12 +73,12 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
         }
     }
     
+    @MainActor
     func save() async {
         isSaving = true
         errorMessage = nil
 
         do {
-            // Determine identifier
             let id: UUID = {
                 switch mode {
                 case .create:
@@ -87,7 +88,6 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
                 }
             }()
 
-            // Build domain model
             let receipt = Receipt(
                 id: id,
                 name: name,
@@ -97,10 +97,8 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
                 image: image
             )
 
-            // Persist changes
             try dependencies.receiptRepository.save(receipt: receipt)
 
-            // Notify coordinator
             switch mode {
             case .create:
                 coordinator.didSaveNewReceipt(receipt)
@@ -114,6 +112,7 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
         isSaving = false
     }
     
+    @MainActor
     func delete() async {
            guard case .edit(let existing) = mode else { return }
            isSaving = true
@@ -130,6 +129,12 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
     func cancel() {
         coordinator.didCancelForm()
     }
+    
+    func presentImagePicker(source: ImageSource) {
+       coordinator.presentImagePicker(source: source) { [weak self] data in
+         self?.image = data
+       }
+     }
 }
 
 extension ReceiptFormViewModel {
