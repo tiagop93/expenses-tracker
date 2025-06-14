@@ -11,16 +11,11 @@ struct ReceiptRowView: View {
     let receipt: Receipt
 
     private var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: receipt.date)
+        receipt.date.formattedMedium
     }
 
     private var formattedAmount: String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = receipt.currency
-        return formatter.string(from: receipt.amount as NSNumber) ?? "\(receipt.amount)"
+        receipt.amount.formattedCurrency(code: receipt.currency)
     }
 
     var body: some View {
