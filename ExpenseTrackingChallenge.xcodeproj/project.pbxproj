@@ -40,11 +40,6 @@
 			path = ExpenseTrackingChallengeTests;
 			sourceTree = "<group>";
 		};
-		27F3C92F2DFAFECA0051B391 /* ExpenseTrackingChallengeUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ExpenseTrackingChallengeUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,7 +72,6 @@
 			children = (
 				27F3C9142DFAFEC70051B391 /* ExpenseTrackingChallenge */,
 				27F3C9252DFAFECA0051B391 /* ExpenseTrackingChallengeTests */,
-				27F3C92F2DFAFECA0051B391 /* ExpenseTrackingChallengeUITests */,
 				27F3C9132DFAFEC70051B391 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -153,9 +147,6 @@
 			dependencies = (
 				27F3C92E2DFAFECA0051B391 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				27F3C92F2DFAFECA0051B391 /* ExpenseTrackingChallengeUITests */,
-			);
 			name = ExpenseTrackingChallengeUITests;
 			packageProductDependencies = (
 			);
@@ -178,6 +169,7 @@
 					};
 					27F3C9212DFAFECA0051B391 = {
 						CreatedOnToolsVersion = 16.2;
+						LastSwiftMigration = 1620;
 						TestTargetID = 27F3C9112DFAFEC70051B391;
 					};
 					27F3C92B2DFAFECA0051B391 = {
@@ -448,6 +440,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -456,6 +449,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.tgpereira93.ExpenseTrackingChallengeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ExpenseTrackingChallenge.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ExpenseTrackingChallenge";
@@ -466,6 +460,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;

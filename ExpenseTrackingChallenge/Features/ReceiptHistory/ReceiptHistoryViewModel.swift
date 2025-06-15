@@ -33,7 +33,7 @@ final class ReceiptHistoryViewModel: ReceiptHistoryViewModelProtocol {
             let receipts = try await dependencies.receiptHistoryRepository.getReceipts()
             state = receipts.isEmpty ? .empty : .success(receipts)
         } catch {
-            state = .failed(error.localizedDescription)
+            state = .failed(String(describing: error))
         }
     }
     

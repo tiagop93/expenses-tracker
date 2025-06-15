@@ -111,7 +111,7 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
                 coordinator.didUpdateReceipt(receipt)
             }
         } catch {
-            state = .failed(error.localizedDescription)
+            state = .failed(String(describing: error))
         }
     }
     
@@ -124,7 +124,7 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
             state = .deleted
             coordinator.didDeleteReceipt(existing)
         } catch {
-            state = .failed(error.localizedDescription)
+            state = .failed(String(describing: error))
         }
     }
     
