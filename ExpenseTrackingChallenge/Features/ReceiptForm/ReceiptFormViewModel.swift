@@ -9,16 +9,14 @@ import Foundation
 
 protocol ReceiptFormViewModelProtocol: ObservableObject {
     var mode: ReceiptFormViewModel.Mode { get }
+    var state: ReceiptFormViewModel.State { get }
     
     var name: String { get set }
     var date: Date { get set }
     var amount: Decimal { get set }
     var currency: String { get set }
     var image: Data? { get set }
-
-    var isSaving: Bool { get }
-    var errorMessage: String? { get }
-
+    
     func save() async
     func delete() async
     func cancel()
@@ -28,9 +26,21 @@ protocol ReceiptFormViewModelProtocol: ObservableObject {
 
 final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
     enum Mode: Hashable {
-      case create
-      case edit(existing: Receipt)
+        case create
+        case edit(existing: Receipt)
     }
+    
+    // MARK: - UI State
+    enum State: Equatable {
+        case idle
+        case saving
+        case saved
+        case deleting
+        case deleted
+        case failed(String)
+    }
+    
+    @Published var state: State = .idle
     
     // MARK: Form Fields
     @Published var name: String
@@ -38,10 +48,6 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
     @Published var amount: Decimal
     @Published var currency: String
     @Published var image: Data?
-
-    // MARK: UI State
-    @Published private(set) var isSaving: Bool = false
-    @Published private(set) var errorMessage: String?
     
     // MARK: Dependencies
     let mode: Mode
@@ -56,7 +62,7 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
         self.mode = mode
         self.dependencies = dependencies
         self.coordinator = coordinator
-
+        
         switch mode {
         case .create:
             self.name = ""
@@ -75,30 +81,29 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
     
     @MainActor
     func save() async {
-        isSaving = true
-        errorMessage = nil
-
+        state = .saving
+        
+        let id: UUID = {
+            switch mode {
+            case .create:
+                return UUID()
+            case .edit(let existing):
+                return existing.id
+            }
+        }()
+        
+        let receipt = Receipt(
+            id: id,
+            name: name,
+            date: date,
+            amount: amount,
+            currency: currency,
+            image: image
+        )
+        
         do {
-            let id: UUID = {
-                switch mode {
-                case .create:
-                    return UUID()
-                case .edit(let existing):
-                    return existing.id
-                }
-            }()
-
-            let receipt = Receipt(
-                id: id,
-                name: name,
-                date: date,
-                amount: amount,
-                currency: currency,
-                image: image
-            )
-
-            try dependencies.receiptRepository.save(receipt: receipt)
-
+            try await dependencies.receiptRepository.save(receipt: receipt)
+            state = .saved
             switch mode {
             case .create:
                 coordinator.didSaveNewReceipt(receipt)
@@ -106,41 +111,38 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
                 coordinator.didUpdateReceipt(receipt)
             }
         } catch {
-            errorMessage = error.localizedDescription
+            state = .failed(error.localizedDescription)
         }
-
-        isSaving = false
     }
     
     @MainActor
     func delete() async {
-           guard case .edit(let existing) = mode else { return }
-           isSaving = true
-           errorMessage = nil
-           do {
-               try dependencies.receiptRepository.delete(receipt: existing)
-               coordinator.didDeleteReceipt(existing)
-           } catch {
-               errorMessage = error.localizedDescription
-           }
-           isSaving = false
-       }
-
+        guard case .edit(let existing) = mode else { return }
+        state = .deleting
+        do {
+            try await dependencies.receiptRepository.delete(receipt: existing)
+            state = .deleted
+            coordinator.didDeleteReceipt(existing)
+        } catch {
+            state = .failed(error.localizedDescription)
+        }
+    }
+    
     func cancel() {
         coordinator.didCancelForm()
     }
     
     func presentImagePicker(source: ImageSource) {
-       coordinator.presentImagePicker(source: source) { [weak self] data in
-         self?.image = data
-       }
-     }
+        coordinator.presentImagePicker(source: source) { [weak self] data in
+            self?.image = data
+        }
+    }
 }
 
 extension ReceiptFormViewModel {
     struct Dependencies {
         let receiptRepository: ReceiptRepositoryProtocol
-
+        
         static var defaultOption: Dependencies {
             .init(receiptRepository: ReceiptRepository())
         }

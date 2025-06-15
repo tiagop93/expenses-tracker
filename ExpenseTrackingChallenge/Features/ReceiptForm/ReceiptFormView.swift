@@ -68,17 +68,22 @@ struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
                 }
             }
             
-            if let error = viewModel.errorMessage {
+            if case .failed(let message) = viewModel.state {
                 Section {
-                    Text(error)
+                    Text(message)
                         .foregroundColor(.red)
                 }
             }
             
             if case .edit = viewModel.mode {
                 Section {
-                    Button("Delete Receipt", role: .destructive) {
-                        Task { await viewModel.delete() }
+                    if viewModel.state == .deleting {
+                        ProgressView()
+                    } else {
+                        Button("Delete Receipt", role: .destructive) {
+                            Task { await viewModel.delete() }
+                        }
+                        .disabled(viewModel.state == .deleting)
                     }
                 }
             }
@@ -86,12 +91,12 @@ struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
         .navigationBarTitle(title, displayMode: .inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                if viewModel.isSaving {
+                if viewModel.state == .saving {
                     ProgressView()
                 } else {
-                    Button(action: {
+                    Button {
                         Task { await viewModel.save() }
-                    }) {
+                    } label: {
                         Image(systemName: "checkmark")
                     }
                     .disabled(viewModel.name.isEmpty)
