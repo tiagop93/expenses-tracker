@@ -40,6 +40,7 @@ struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
                         value: $viewModel.amount,
                         format: .number
                     )
+                    .autocorrectionDisabled(true)
                     .keyboardType(.decimalPad)
                     Spacer()
                     Text(viewModel.currency)
@@ -104,7 +105,7 @@ struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
             }
         }
         .confirmationDialog(
-            "Add Receipt Photo",
+            viewModel.mode == .create ? "Add Receipt Photo" : "Replace Receipt Photo",
             isPresented: $showingImageSourceChooser,
             titleVisibility: .visible
         ) {

@@ -10,7 +10,7 @@ import Foundation
 protocol ReceiptHistoryViewModelProtocol: ObservableObject {
     var state: ReceiptHistoryViewModel.State { get }
     
-    func loadReceipts()
+    func loadReceipts() async
     func didPressCreateReceipt()
     func didPressReceipt(receipt: Receipt)
 }
@@ -26,25 +26,14 @@ final class ReceiptHistoryViewModel: ReceiptHistoryViewModelProtocol {
         self.coordinator = coordinator
     }
     
-    func loadReceipts() {
+    @MainActor
+    func loadReceipts() async {
         state = .loading
-        
-        Task { [weak self] in
-            guard let self = self else { return }
-            do {
-                let result = try await self.dependencies.receiptHistoryRepository.getReceipts()
-                await MainActor.run {
-                    if result.isEmpty {
-                        self.state = .empty
-                    } else {
-                        self.state = .success(result)
-                    }
-                }
-            } catch {
-                await MainActor.run {
-                    self.state = .failed("Failed to load receipts.")
-                }
-            }
+        do {
+            let receipts = try await dependencies.receiptHistoryRepository.getReceipts()
+            state = receipts.isEmpty ? .empty : .success(receipts)
+        } catch {
+            state = .failed(error.localizedDescription)
         }
     }
     
@@ -56,7 +45,7 @@ final class ReceiptHistoryViewModel: ReceiptHistoryViewModelProtocol {
         coordinator.goToEditReceipt(receipt)
     }
     
-    enum State {
+    enum State: Equatable {
         case idle
         case loading
         case success([Receipt])

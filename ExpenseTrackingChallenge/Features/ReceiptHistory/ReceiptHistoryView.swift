@@ -18,7 +18,7 @@ struct ReceiptHistoryView<ViewModel: ReceiptHistoryViewModelProtocol>: View {
         Group {
             switch viewModel.state {
             case .idle:
-                Color.clear.onAppear { viewModel.loadReceipts() }
+                Color.clear.onAppear { Task { await viewModel.loadReceipts() }}
             case .loading:
                 ProgressView("Loading Receipts...")
             case .success(let receipts):
@@ -45,7 +45,7 @@ struct ReceiptHistoryView<ViewModel: ReceiptHistoryViewModelProtocol>: View {
                         .multilineTextAlignment(.center)
                         .foregroundColor(.red)
                     Button("Retry") {
-                        viewModel.loadReceipts()
+                         Task { await viewModel.loadReceipts() }
                     }
                 }
             }

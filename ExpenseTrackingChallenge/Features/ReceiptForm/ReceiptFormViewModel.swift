@@ -133,8 +133,10 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
     }
     
     func presentImagePicker(source: ImageSource) {
-        coordinator.presentImagePicker(source: source) { [weak self] data in
-            self?.image = data
+        Task { @MainActor in
+            coordinator.presentImagePicker(source: source) { [weak self] data in
+                self?.image = data
+            }
         }
     }
 }
