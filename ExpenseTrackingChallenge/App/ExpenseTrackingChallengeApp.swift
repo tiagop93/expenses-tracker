@@ -13,7 +13,7 @@ struct ExpenseTrackingChallengeApp: App {
     
     var body: some Scene {
         WindowGroup {
-            AppRootView(coordinator: coordinator)
+            coordinator.rootView
         }
     }
 }

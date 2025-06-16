@@ -8,7 +8,7 @@
 import CoreData
 
 protocol ReceiptRepositoryProtocol {
-    func getReceipts() async throws -> [Receipt]
+    func getReceipts(page: Int, pageSize: Int) async throws -> [Receipt]
     func save(receipt: Receipt) async throws
     func delete(receipt: Receipt) async throws
 }
@@ -21,13 +21,16 @@ final class ReceiptRepository: ReceiptRepositoryProtocol {
         self.persistence = persistence
     }
     
-    func getReceipts() async throws -> [Receipt] {
+    func getReceipts(page: Int, pageSize: Int) async throws -> [Receipt] {
         let bgContext = persistence.backgroundContext
         return try await withCheckedThrowingContinuation { continuation in
             bgContext.perform {
                 do {
                     let request: NSFetchRequest<ReceiptEntity> = ReceiptEntity.fetchRequest()
                     request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+                    request.fetchOffset = page * pageSize
+                    request.fetchLimit = pageSize
+                    
                     let entities = try bgContext.fetch(request)
                     let receipts = entities.compactMap { self.factory.toDomain(from: $0) }
                     continuation.resume(returning: receipts)

@@ -7,10 +7,6 @@
 
 import SwiftUI
 
-@MainActor @preconcurrency public protocol AppCoordinatorProtocol {
-    var rootView: AnyView { get }
-}
-
 final class AppCoordinator: CoordinatorProtocol {
     
     // MARK: — Associated Types
@@ -23,11 +19,12 @@ final class AppCoordinator: CoordinatorProtocol {
     @Published var sheet: Sheet?
     @Published var fullScreenCover: FullScreenCover?
     
+    private var imagePickerCompletion: ((Data) -> Void)?
+    
+    // MARK: — Entry point into the flow
     var mainView: some View {
         build(page: .receiptHistory)
     }
-    
-    private var imagePickerCompletion: ((Data) -> Void)?
     
     // MARK: — Build Methods
     @ViewBuilder
@@ -59,14 +56,6 @@ final class AppCoordinator: CoordinatorProtocol {
     @ViewBuilder
     func build(fullScreenCover: FullScreenCover) -> some View {
         EmptyView()
-    }
-}
-
-// MARK: - AppCoordinatorProtocol
-
-extension AppCoordinator: AppCoordinatorProtocol {
-    var rootView: AnyView {
-        AnyView(AppRootView(coordinator: self))
     }
 }
 

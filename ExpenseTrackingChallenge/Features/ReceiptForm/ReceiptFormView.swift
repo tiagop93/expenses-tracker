@@ -135,7 +135,8 @@ struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
 }
 
 #Preview {
-    let viewModel = ReceiptFormViewModel(mode: .create, dependencies: .defaultOption, coordinator: MockReceiptFormCoordinator())
+    let mode: ReceiptFormViewModel.Mode = .create
+    let viewModel = ReceiptFormViewModel(mode: mode, dependencies: .defaultOption, coordinator: AppCoordinator())
     NavigationStack {
         ReceiptFormView(viewModel: viewModel)
     }

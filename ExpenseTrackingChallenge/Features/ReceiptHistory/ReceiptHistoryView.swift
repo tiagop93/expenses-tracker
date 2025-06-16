@@ -18,25 +18,13 @@ struct ReceiptHistoryView<ViewModel: ReceiptHistoryViewModelProtocol>: View {
         Group {
             switch viewModel.state {
             case .idle:
-                Color.clear.onAppear { Task { await viewModel.loadReceipts() }}
+                Color.clear
+                    .onAppear { Task { await viewModel.loadReceipts() } }
+                
             case .loading:
                 ProgressView("Loading Receipts...")
-            case .success(let receipts):
-                List(receipts, id: \.id) { receipt in
-                    ReceiptRowView(receipt: receipt)
-                        .onTapGesture {
-                            viewModel.didPressReceipt(receipt: receipt)
-                        }
-                }
-            case .empty:
-                VStack {
-                    Text("No receipts found.")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                    Button("Add Receipt") {
-                        viewModel.didPressCreateReceipt()
-                    }
-                }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
             case .failed(let message):
                 VStack(spacing: 8) {
                     Text("Error:")
@@ -45,7 +33,40 @@ struct ReceiptHistoryView<ViewModel: ReceiptHistoryViewModelProtocol>: View {
                         .multilineTextAlignment(.center)
                         .foregroundColor(.red)
                     Button("Retry") {
-                         Task { await viewModel.loadReceipts() }
+                        Task { await viewModel.loadReceipts() }
+                    }
+                }
+                .padding()
+                
+            case .loaded(let page):
+                if page.receipts.isEmpty {
+                    VStack {
+                        Text("No receipts found.")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                        Button("Add Receipt") {
+                            viewModel.didPressCreateReceipt()
+                        }
+                    }
+                    .padding()
+                } else {
+                    List {
+                        ForEach(page.receipts, id: \.id) { receipt in
+                            ReceiptRowView(receipt: receipt)
+                                .onTapGesture {
+                                    viewModel.didPressReceipt(receipt)
+                                }
+                                .onAppear {
+                                    if receipt == page.receipts.last {
+                                        Task { await viewModel.loadNextPage() }
+                                    }
+                                }
+                        }
+                        
+                        if page.pagination.isLoadingMore {
+                            ProgressView()
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
                     }
                 }
             }
@@ -64,11 +85,6 @@ struct ReceiptHistoryView<ViewModel: ReceiptHistoryViewModelProtocol>: View {
 }
 
 #Preview {
-    let viewModel = ReceiptHistoryViewModel(
-        dependencies: .mock,
-        coordinator: MockReceiptHistoryCoordinator()
-    )
-    NavigationStack {
-        ReceiptHistoryView(viewModel: viewModel)
-    }
+    let coord = AppCoordinator()
+    CoordinatorRootView(coordinator: coord)
 }

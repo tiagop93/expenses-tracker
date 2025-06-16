@@ -61,3 +61,9 @@ extension CoordinatorProtocol {
         fullScreenCover = nil
     }
 }
+
+extension CoordinatorProtocol {
+    public var rootView: some View {
+        CoordinatorRootView(coordinator: self)
+    }
+}

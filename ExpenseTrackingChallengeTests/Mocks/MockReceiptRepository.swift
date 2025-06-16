@@ -20,7 +20,7 @@ class MockReceiptRepository: ReceiptRepositoryProtocol {
         self.behavior = behavior
     }
 
-    func getReceipts() async throws -> [Receipt] {
+    func getReceipts(page: Int, pageSize: Int) async throws -> [Receipt] {
         switch behavior {
         case .success(let receipts): return receipts
         case .failure(let error): throw error

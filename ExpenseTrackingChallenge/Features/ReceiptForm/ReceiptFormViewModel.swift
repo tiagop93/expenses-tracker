@@ -25,12 +25,15 @@ protocol ReceiptFormViewModelProtocol: ObservableObject {
 }
 
 final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
+    // MARK: - Mode
+    
     enum Mode: Hashable {
         case create
         case edit(existing: Receipt)
     }
     
-    // MARK: - UI State
+    // MARK: - State
+    
     enum State: Equatable {
         case idle
         case saving
@@ -40,23 +43,26 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
         case failed(String)
     }
     
-    @Published var state: State = .idle
+    // MARK: - Published Properties
     
-    // MARK: Form Fields
+    @Published private(set) var state: State = .idle
     @Published var name: String
     @Published var date: Date
     @Published var amount: Decimal
     @Published var currency: String
     @Published var image: Data?
     
-    // MARK: Dependencies
+    // MARK: - Dependencies
+    
     let mode: Mode
     private let dependencies: Dependencies
     private let coordinator: ReceiptFormCoordinatorProtocol
     
+    // MARK: - Initialization
+    
     init(
         mode: Mode,
-        dependencies: Dependencies,
+        dependencies: Dependencies = .defaultOption,
         coordinator: ReceiptFormCoordinatorProtocol
     ) {
         self.mode = mode
@@ -65,19 +71,21 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
         
         switch mode {
         case .create:
-            self.name = ""
-            self.date = Date()
-            self.amount = .zero
-            self.currency = Locale.current.currency?.identifier ?? "EUR"
-            self.image = nil
+            name = ""
+            date = Date()
+            amount = .zero
+            currency = Locale.current.currency?.identifier ?? "EUR"
+            image = nil
         case .edit(let existing):
-            self.name = existing.name
-            self.date = existing.date
-            self.amount = existing.amount
-            self.currency = existing.currency
-            self.image = existing.image
+            name = existing.name
+            date = existing.date
+            amount = existing.amount
+            currency = existing.currency
+            image = existing.image
         }
     }
+    
+    // MARK: - Public API
     
     @MainActor
     func save() async {
@@ -118,6 +126,7 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
     @MainActor
     func delete() async {
         guard case .edit(let existing) = mode else { return }
+        
         state = .deleting
         do {
             try await dependencies.receiptRepository.delete(receipt: existing)
@@ -142,6 +151,8 @@ final class ReceiptFormViewModel: ReceiptFormViewModelProtocol {
 }
 
 extension ReceiptFormViewModel {
+    // MARK: - Dependencies
+    
     struct Dependencies {
         let receiptRepository: ReceiptRepositoryProtocol
         

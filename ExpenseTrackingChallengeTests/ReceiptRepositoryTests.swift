@@ -10,12 +10,12 @@ import CoreData
 @testable import ExpenseTrackingChallenge
 
 final class ReceiptRepositoryTests: XCTestCase {
-    var persistence: InMemoryPersistenceController!
+    var persistence: MockCoreDataController!
     var repository: ReceiptRepositoryProtocol!
     
     override func setUp() {
         super.setUp()
-        persistence = InMemoryPersistenceController()
+        persistence = MockCoreDataController()
         repository = ReceiptRepository(persistence: persistence)
     }
     
@@ -35,7 +35,8 @@ final class ReceiptRepositoryTests: XCTestCase {
             image: nil
         )
         try await repository.save(receipt: receipt)
-        let receipts = try await repository.getReceipts()
+        
+        let receipts = try await repository.getReceipts(page: 0, pageSize: 15)
         XCTAssertEqual(receipts.count, 1)
         XCTAssertEqual(receipts.first, receipt)
     }
@@ -56,7 +57,7 @@ final class ReceiptRepositoryTests: XCTestCase {
         updated.name = "Updated Receipt"
         try await repository.save(receipt: updated)
         
-        let receipts = try await repository.getReceipts()
+        let receipts = try await repository.getReceipts(page: 0, pageSize: 15)
         XCTAssertEqual(receipts.count, 1)
         XCTAssertEqual(receipts.first?.name, "Updated Receipt")
     }
@@ -72,31 +73,8 @@ final class ReceiptRepositoryTests: XCTestCase {
         )
         try await repository.save(receipt: receipt)
         try await repository.delete(receipt: receipt)
-        let receipts = try await repository.getReceipts()
-        XCTAssertTrue(receipts.isEmpty)
-    }
-}
-
-// MARK: - InMemoryPersistenceController
-extension ReceiptRepositoryTests {
-    final class InMemoryPersistenceController: PersistenceController {
-
-        let container: NSPersistentContainer
-
-        init() {
-            container = NSPersistentContainer(name: "receipt")
-            container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
-            container.loadPersistentStores { _, error in
-                XCTAssertNil(error)
-            }
-        }
-
-        var viewContext: NSManagedObjectContext {
-            container.viewContext
-        }
         
-        var backgroundContext: NSManagedObjectContext {
-            container.newBackgroundContext()
-        }
+        let receipts = try await repository.getReceipts(page: 0, pageSize: 15)
+        XCTAssertTrue(receipts.isEmpty)
     }
 }
