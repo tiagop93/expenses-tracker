@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
-    @ObservedObject private var viewModel: ViewModel
-    
+    @StateObject private var viewModel: ViewModel
+
     @State private var showingImageSourceChooser = false
     @State private var showingImagePicker = false
     @State private var imageSource: ImageSource = .photoLibrary
     
     init(viewModel: ViewModel) {
-        self.viewModel = viewModel
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
     
     private var title: String {
@@ -105,7 +105,7 @@ struct ReceiptFormView<ViewModel: ReceiptFormViewModelProtocol>: View {
             }
         }
         .confirmationDialog(
-            viewModel.mode == .create ? "Add Receipt Photo" : "Replace Receipt Photo",
+            "Receipt Photo",
             isPresented: $showingImageSourceChooser,
             titleVisibility: .visible
         ) {

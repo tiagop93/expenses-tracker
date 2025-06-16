@@ -8,20 +8,16 @@
 import SwiftUI
 
 struct ReceiptHistoryView<ViewModel: ReceiptHistoryViewModelProtocol>: View {
-    @ObservedObject private var viewModel: ViewModel
+    @StateObject private var viewModel: ViewModel
     
     init(viewModel: ViewModel) {
-        self.viewModel = viewModel
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
     
     var body: some View {
         Group {
             switch viewModel.state {
-            case .idle:
-                Color.clear
-                    .onAppear { Task { await viewModel.loadReceipts() } }
-                
-            case .loading:
+            case .idle, .loading:
                 ProgressView("Loading Receipts...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
@@ -80,6 +76,9 @@ struct ReceiptHistoryView<ViewModel: ReceiptHistoryViewModelProtocol>: View {
                     Image(systemName: "plus")
                 }
             }
+        }
+        .onAppear {
+            Task { await viewModel.loadReceipts() }
         }
     }
 }
